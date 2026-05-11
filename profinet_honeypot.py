@@ -22,7 +22,7 @@ import struct
 import threading
 import time
 import traceback
-import uuid
+
 from collections import defaultdict
 from http.server import BaseHTTPRequestHandler, HTTPServer
 
