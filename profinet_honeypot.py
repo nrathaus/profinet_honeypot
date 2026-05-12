@@ -105,6 +105,7 @@ RECORD_STORE[(0, 1, 0xF000)] = b"\x00" * 4
 
 
 def log(level: str, msg: str):
+    """Log"""
     ts = datetime.datetime.now(datetime.UTC).strftime("%H:%M:%S.%f")[:-3]
     line = f"[{ts}] [{level}] {msg}"
     print(line)
@@ -114,6 +115,7 @@ def log(level: str, msg: str):
 
 
 def bump(key: str):
+    """Increase by one the message type"""
     with stats_lock:
         stats["by_type"][key] += 1
         stats["total_received"] += 1
@@ -121,16 +123,19 @@ def bump(key: str):
 
 
 def bump_reply():
+    """Increase by one how many messages we replied to"""
     with stats_lock:
         stats["total_replied"] += 1
 
 
 def bump_error():
+    """Increase by one how many errors we sent"""
     with stats_lock:
         stats["errors"] += 1
 
 
 def bump_malformed():
+    """Increase by one how many malformed messages we saw"""
     with stats_lock:
         stats["malformed"] += 1
 
@@ -425,6 +430,7 @@ def build_implicit_read_response(req_hdr: dict) -> bytes:
 
 
 def handle_dcp(pkt, iface: str, src_mac: str):
+    """Handle DCP"""
     raw = bytes(pkt)
     sender_mac = pkt[Ether].src
     payload = raw[14:]
@@ -438,6 +444,7 @@ def handle_dcp(pkt, iface: str, src_mac: str):
         xid = struct.unpack_from(">I", payload, 4)[0]
         if svc_type != DCP_REQ:
             return
+
         if svc_id == DCP_SRV_IDENTIFY:
             bump("dcp_identify")
             log("INFO", f"DCP Identify REQ  xid=0x{xid:08X} from {sender_mac}")
@@ -477,12 +484,14 @@ def handle_dcp(pkt, iface: str, src_mac: str):
 
 
 def handle_rt(pkt, iface: str, src_mac: str):
+    """Handle RT packets"""
     raw = bytes(pkt)
     payload = raw[14:]
     src = pkt[Ether].src
     try:
         if len(payload) < 4:
             raise ValueError("RT frame too short")
+
         frame_id = struct.unpack_from(">H", payload, 0)[0]
         if FRAMEID_RT_MIN <= frame_id <= FRAMEID_RT_MAX:
             bump("rt_cyclic")
